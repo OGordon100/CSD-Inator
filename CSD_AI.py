@@ -71,7 +71,7 @@ sct = mss.mss()
 # Find and store holding station options
 while HS_Capturing == 1:
     ImgGameWindow = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
-    if np.mean(CompImageHS == WindowExtractor(ImgGameWindow,WindowsHS,1,0)) > CompThresh:
+    if np.round(np.mean(WindowExtractor(ImgGameWindow,WindowsHS,1,0))) == 38.0:
         print('Capturing holding station data!')
         pyautogui.keyDown('tab')  
         pyautogui.keyDown('1')
@@ -105,7 +105,7 @@ while 'Screen capturing':
 
     for loopHSMake in range(0,len(WindowsHS['left'])):
         # Check if a HS is free (NB- change this to just look for white text!)
-        if np.mean(CompImageHS == ImgWindowsHS[:,:,:,loopHSMake]) > CompThresh:
+        if np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake])) == 38.0:
             print('\nHolding Station ' + str(loopHSMake+1) + ' Free!')
                         
             # Open the holding station (can't use.hotkey because of releasing keys backwards)

@@ -5,25 +5,41 @@ For now, we can only automatically make simple Holding Station foods, and not se
 The next release will include multi-ingredient, 1 step recipes
 
 # SUPPORTED FOODS:
+
   HS REQUIRED: 
     - French Toast
+    
     - Biscuits & Gravy
+    
     - Oatmeal
     
   HS OPTIONAL:
+  
     - Hamburger
+    
     - Hotdog
+    
     - Yaki Tomorokoshi
+    
     - Bean Burger
+    
     - Turkey Leg
     
   SIDES:
+  
     - Mac n' Cheese
+    
     - Sausage Links 
+    
     - Bacon
+    
     - Corn on the Cob
+    
     - Edamame
+    
     - Peas
+    
     - Scrambled Eggs
+    
     - Grilled Fennel
     

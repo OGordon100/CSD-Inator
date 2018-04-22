@@ -7,6 +7,7 @@ The next release will include multi-ingredient, 1 step recipes
 # SUPPORTED FOODS:
 
   HS REQUIRED: 
+  
     - French Toast
     
     - Biscuits & Gravy

@@ -1,8 +1,7 @@
 # CSD_AI
 A program (eventually!) capable of beating the "stress" mode of the game Cook Serve Delicious 2 (and earning a very rare achievment)
 
-For now, we can only automatically make simple Holding Station foods, and not serve them. 
-The next release will include multi-ingredient, 1 step recipes
+Current status: Can make the vast majority of all Holding Station Recipes and Sides, but NOT serve
 
 # SUPPORTED FOODS:
 

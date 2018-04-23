@@ -14,13 +14,57 @@ The next release will include multi-ingredient, 1 step recipes
     
     - Oatmeal
     
+    - Chilli
+    
+    - Stew
+    
+    - Corndogs
+    
+    - Egg Drop Soup
+    
+    - Brisket Slices
+    
+    - Turkey Slices
+    
+    - Ham Slices
+    
+    - Sausage Slices
+    
+    - Muffins
+    
+    - Pretzel
+    
+    - Chicken Sandwhich
+    
+    - Lamb Chop
+    
+    - Meatloaf
+    
+    - Ribs
+    
+    - Pig's Blood Cake
+    
+    - Tabbouleh
+    
+    - Spaghetti
+    
+    - Chopped Brisket Sandwhich
+    
+    - Prime Rib
+    
+    - Roast Beef Sandwhich
+    
+    - Slice of Pie
+    
+    - Deluxe Nachos
+    
+    - Pulled Pork Sandwhich
+    
   HS OPTIONAL:
   
     - Hamburger
     
     - Hotdog
-    
-    - Yaki Tomorokoshi
     
     - Bean Burger
     
@@ -37,6 +81,14 @@ The next release will include multi-ingredient, 1 step recipes
     - Sopapillas
     
     - Cannoli
+    
+    - Fried Shrimp
+    
+    - Griddle Eggs
+    
+    - Grilled Chicken Sandwhich
+    
+    - Fried Fish
     
   SIDES:
   
@@ -56,5 +108,90 @@ The next release will include multi-ingredient, 1 step recipes
     
     - Grilled Fennel
     
-    - Pakoras
+    - Pakora
     
+    - Asparagus
+    
+    - Baked Potato
+    
+    - Black Beans
+    
+    - Broccoli
+    
+    - Brussels Sprouts
+    
+    - Side Chow Mein
+    
+    - Sauerkraut
+    
+    - Dinner Roll
+    
+    - Side Egg Drop Soup
+    
+    - Egg Rolls
+    
+    - Kale Chips
+    
+    - Mexican Rice
+    
+    - Onion Rings
+   
+    - Fries
+    
+    - Fried Okra
+    
+    - Fruit Spread
+    
+    - German Red Cabbage
+    
+    - Green Beans
+    
+    - Hash Browns
+    
+    - Pinto Beans
+    
+    - Potato Salad
+    
+    - Black Rice
+    
+    - Roasted Cauliflower
+    
+    - Brown Rice
+    
+    - Side Chilli
+    
+    - Side Stew
+    
+    - Side Salad
+    
+    - Grits
+    
+    - Steamed Vegetables
+    
+    - Tater Tots
+    
+    - Toast
+    
+    - Tuscan Beans
+    
+    - Cookies
+    
+    - White Rice
+    
+    - Wild Rice
+    
+    - Stuffed Artichokes
+    
+    - Boiled Eggs
+    
+    - Fried Seafood Sides
+    
+    - Tazukuri
+    
+# Unsupported Foods:
+
+    HS REQUIRED: Lasagne, Pizza by the Slice, Tiramisu, Japanese Fried Rise
+    
+    HS OPTIONAL: Yaki Tomorokoshi
+    
+    SIDES: Peas, Mashed Potatoes, Refried Beans, Kimchi, Onigiri, 

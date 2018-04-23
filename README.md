@@ -26,6 +26,18 @@ The next release will include multi-ingredient, 1 step recipes
     
     - Turkey Leg
     
+    - Chicken Nuggets
+    
+    - Chicken Strips
+    
+    - Steak Fingers
+    
+    - Chimichanga
+    
+    - Sopapillas
+    
+    - Cannoli
+    
   SIDES:
   
     - Mac n' Cheese
@@ -43,4 +55,6 @@ The next release will include multi-ingredient, 1 step recipes
     - Scrambled Eggs
     
     - Grilled Fennel
+    
+    - Pakoras
     

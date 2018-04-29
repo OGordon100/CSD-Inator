@@ -95,6 +95,11 @@ WindowsServeRegion = {'top':[102,168,234,300,366,432,498,564,630,696,762,828,894
              'width':44,
              'height':56}
 
+WindowsCookRegion = {'top':[131,197,263,329,395,461,527,593,659,725,791,857,923,989],
+             'left':[66],
+             'width':258,
+             'height':33}
+
 WindowsWaiting = {'top':[105],
              'left':[62,458],
              'width':230,
@@ -133,6 +138,10 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Wild Rice':'r' , 'Soy Sauce':'o' , 'Clam':'l', 
                    'Raw Chop':'l'} 
 
+ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
+                   '7':'7' , '8':'8' , '9':'9' , '10':'0' , '11':'-' , 
+                   '12':'=' , '13':'[' , '14':']'}
+
 # Set stuff up
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files (x86)/Tesseract-OCR/tesseract'
 ImgWindowsHS = np.zeros([WindowsHS['height'],WindowsHS['width'],3,len(WindowsHS['left'])]).astype('uint8')
@@ -154,11 +163,11 @@ while HS_Capturing == 1:
         # Open the holding station
         print('Capturing holding station data!')
         pyautogui.keyDown('tab')  
-        time.sleep(0.04)
+        time.sleep(0.06)
         pyautogui.keyDown('1')
-        time.sleep(0.04)
+        time.sleep(0.06)
         pyautogui.keyUp('tab')
-        time.sleep(0.04)
+        time.sleep(0.06)
         pyautogui.keyUp('1')
         
         # OCR for each page of the holding station, and store results
@@ -200,11 +209,11 @@ while 'Screen capturing':
                         
             # Open the holding station (can't use.hotkey because of releasing keys backwards)
             pyautogui.keyDown('tab')  
-            time.sleep(0.04)
+            time.sleep(0.06)
             pyautogui.keyDown(str(loopHSMake+1))
-            time.sleep(0.04)
+            time.sleep(0.06)
             pyautogui.keyUp('tab')
-            time.sleep(0.04)
+            time.sleep(0.06)
             pyautogui.keyUp(str(loopHSMake+1))
             
             # Pick a recipe
@@ -213,22 +222,22 @@ while 'Screen capturing':
             FiltOpts2 = set(AllRecipeOpts[1])-set(DoneOpts2)
             if (HSWindowNum == 1) & (bool(FiltOpts1) == 1):
                 # Make a HS required recipe
-                print('Making a HS required recipe')
+                print('    Making a HS required recipe')
                 randopt = random.sample(FiltOpts1,1)[0].lower()
                 DoneOpts1.append(randopt.upper())
             elif (bool(FiltOpts1) == 0):
-                print('All HS required recipes made')
+                print('    All HS required recipes made')
                 HSWindowNum += 1
                 pyautogui.hotkey('space')
                 RecipeOpts = AllRecipeOpts[1]
                 if (HSWindowNum == 2) & (bool(FiltOpts2) == 1):
                     # Make a HS optional recipe
-                    print('Making a HS optional recipe')
+                    print('    Making a HS optional recipe')
                     randopt = random.sample(FiltOpts2,1)[0].lower()
                     DoneOpts2.append(randopt.upper())
                 else:
                     # Make a side
-                    print('All HS optional recipes made \nMaking a side')
+                    print('    All HS optional recipes made \n    Making a side')
                     RecipeOpts = AllRecipeOpts[2]
                     HSWindowNum += 1
                     pyautogui.hotkey('space')
@@ -237,19 +246,19 @@ while 'Screen capturing':
                 break
             
             # Start the recipe!!!
-            print('    Making Recipe ' + randopt.upper())
+            print('        Making Recipe ' + randopt.upper())
             pyautogui.keyDown(randopt)
             pyautogui.keyUp(randopt)
             
             # Threshold and scan for instructions
             RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
-            print('    Found Recipe: ' + RawInstruction)
+            print('            Found Recipe: ' + RawInstruction)
             
             # Get number of red, blue, green instructions
             
             # Build out list to perform
             AllInstructions = InstructionMaker(RawInstruction)
-            print('    Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
+            print('            Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
             
             # Perform instructions
             InstructionFollower(AllInstructions)
@@ -257,18 +266,39 @@ while 'Screen capturing':
     # For each serving region
     for loopServeRegionMake in range(0,len(WindowsServeRegion['top'])):
         # Check if a serving region requires service
-        print(np.sum(ImgWindowsServe[:,:,:,loopServeRegionMake] == [255,255,255]))
-        if np.round(np.mean(ImgWindowsServe[:,:,:,loopServeRegionMake])) > 0:
+        if np.sum(ImgWindowsServe[:,:,:,loopServeRegionMake] == [255,255,255]) > 0:
             print('\nServing Station ' + str(loopServeRegionMake+1) + ' Occupied!')
             
-            if False==True:
-                # If food is cooking, don't do anything!!!!!
-                print('test')
-                break
-            else:
-                # If food is not cooking/has finished cooking, do do something!
-                print('true')
-                # If food has been served, end loop
-                
-                # If food requires extra steps, do the extra steps!
+            # Get section of screen
+            ImgServeRegion = WindowExtractor(ImgGameWindow,WindowsCookRegion,0,loopServeRegionMake)
             
+            if np.sum(ImgServeRegion == [255,255,255]) > 500:
+                # If food is currently cooking, do nothing
+                print('    Cannot serve this iteration.')
+            elif np.sum(ImgServeRegion == [0,36,255]) > 500:     
+                # If food currently waiting for HS required stage, do nothing
+                print('    Food at station is waiting for HS.')
+            else:    
+                # Enter serving window, and determine if food was insta-served
+                pyautogui.keyDown(ServingKeyBinds[str(loopServeRegionMake+1)])
+                pyautogui.keyUp(ServingKeyBinds[str(loopServeRegionMake+1)])
+                
+                ImgInstaTester = WindowExtractor(cv2.cvtColor(np.array(sct.grab(WindowGame)), 
+                                                         cv2.COLOR_RGBA2RGB),WindowsFoodRecipe,0,0)
+                if np.sum(ImgInstaTester == [73,73,73]) < 2000: 
+                    print('        Food insta-served')
+                else:
+                    # If extra steps required
+                    print('        Extra steps required')
+                    
+                    # Threshold and scan for instructions
+                    RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
+                    print('            Found Recipe: ' + RawInstruction)
+                    
+                    # Build out list to perform
+                    AllInstructions = InstructionMaker(RawInstruction)
+                    print('            Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
+                    
+                    # Perform instructions
+                    InstructionFollower(AllInstructions)
+                

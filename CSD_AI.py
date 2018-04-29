@@ -90,6 +90,11 @@ WindowsHS = {'top':[29],
              'width':112,
              'height':39}
 
+WindowsServeRegion = {'top':[102,168,234,300,366,432,498,564,630,696,762,828,894,960],
+             'left':[0],
+             'width':44,
+             'height':56}
+
 WindowsWaiting = {'top':[105],
              'left':[62,458],
              'width':230,
@@ -131,6 +136,7 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
 # Set stuff up
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files (x86)/Tesseract-OCR/tesseract'
 ImgWindowsHS = np.zeros([WindowsHS['height'],WindowsHS['width'],3,len(WindowsHS['left'])]).astype('uint8')
+ImgWindowsServe = np.zeros([WindowsServeRegion['height'],WindowsServeRegion['width'],3,len(WindowsServeRegion['top'])]).astype('uint8')
 pyautogui.PAUSE = 0.04
 DoneOpts1 = []
 DoneOpts2 = []
@@ -181,7 +187,11 @@ while 'Screen capturing':
         ImgWindowsHS[:,:,:,loopHSCap] = WindowExtractor(ImgGameWindow,WindowsHS,loopHSCap,0)
         
     # Extract hungry people wanting food NOW regions
-    time.sleep(1)
+    for loopServeRegionCap in range(0,len(WindowsServeRegion['top'])):
+        ImgWindowsServe[:,:,:,loopServeRegionCap] = WindowExtractor(ImgGameWindow,WindowsServeRegion,0,loopServeRegionCap)
+        
+    # Rest for a second    
+    time.sleep(0.5)
     # For each holding station
     for loopHSMake in range(0,len(WindowsHS['left'])):
         # Check if a HS is free 
@@ -243,8 +253,22 @@ while 'Screen capturing':
             
             # Perform instructions
             InstructionFollower(AllInstructions)
-                                        
-            # Finish recipe
-            pyautogui.press('enter')
+        
+    # For each serving region
+    for loopServeRegionMake in range(0,len(WindowsServeRegion['top'])):
+        # Check if a serving region requires service
+        print(np.sum(ImgWindowsServe[:,:,:,loopServeRegionMake] == [255,255,255]))
+        if np.round(np.mean(ImgWindowsServe[:,:,:,loopServeRegionMake])) > 0:
+            print('\nServing Station ' + str(loopServeRegionMake+1) + ' Occupied!')
             
-
+            if False==True:
+                # If food is cooking, don't do anything!!!!!
+                print('test')
+                break
+            else:
+                # If food is not cooking/has finished cooking, do do something!
+                print('true')
+                # If food has been served, end loop
+                
+                # If food requires extra steps, do the extra steps!
+            

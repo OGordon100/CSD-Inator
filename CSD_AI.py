@@ -1,4 +1,4 @@
-# Import
+##### IMPORT ####
 import cv2
 import mss
 import numpy as np
@@ -8,14 +8,15 @@ import random
 import re
 import time
 
+##### FUNCTIONS ####
 
 # Define function to extract a region of the game window
 def WindowExtractor (BigWindow,WindowBounds,BoundNumX,BoundNumY):
     return BigWindow[WindowBounds['top'][BoundNumY]:WindowBounds['top'][BoundNumY]+WindowBounds['height'],\
                      WindowBounds['left'][BoundNumX]:WindowBounds['left'][BoundNumX]+WindowBounds['width'],:]
 
-# Define function to scan game window
-def TextScan (ImgGame,WindowBounds):
+# Define function to threshold and determine number of recipes for the holding stations
+def TextScanHSOpts (ImgGame,WindowBounds):
                 # Take image and binarise to extract detail
                 ImgFoodInputBig = ImgGame 
                 ImgFoodInputBig[(ImgFoodInputBig[:,:,0]==ImgFoodInputBig[:,:,1]) & (ImgFoodInputBig[:,:,0]==ImgFoodInputBig[:,:,2])] = 255
@@ -27,12 +28,23 @@ def TextScan (ImgGame,WindowBounds):
                 for loopImgFindx in range(0,len(WindowsTextRegions['left'])):
                     for loopImgFindy in range(0,len(WindowsTextRegions['top'])):
                         ImgInput = WindowExtractor(WindowBig,WindowBounds,loopImgFindx,loopImgFindy)
+
                         FoundThing = pytesseract.image_to_string(ImgInput[:,:,0],config='-psm 10')
                         if FoundThing != '':
                             RecipeOpts.append(FoundThing)
                         IterFindOpts += 1
                 return(RecipeOpts)
 
+# Define function to threshold and determine ingredients avaliable for a recipe
+def TextScanRecipe (WindowGame,WindowsFoodRecipe): 
+    time.sleep(0.1)
+    ImgInstructionInputBig = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
+    ImgInstruction =cv2.cvtColor(WindowExtractor(ImgInstructionInputBig,WindowsFoodRecipe,0,0),cv2.COLOR_RGB2GRAY)
+    ImgInstruction[ImgInstruction==213] = 255 
+    ImgInstruction[ImgInstruction!=255] = 0 
+    RawInstruction = pytesseract.image_to_string(ImgInstruction,config='-psm 11').replace('\n', ' ').replace('ENTER','')
+    return(RawInstruction)
+    
 # Define function to build a set of instructions to follow
 def InstructionMaker (RawInstruction):
     RecipeInstructions = []
@@ -57,6 +69,19 @@ def InstructionMaker (RawInstruction):
         # Build the instruction!
         RecipeInstructions.append([Ingredient, RepeatNum, KeyCombo])
     return(RecipeInstructions)   
+
+# Define function to follow instructions
+def InstructionFollower (AllInstructions):
+    # Follow instructions in list
+    for Instruction in AllInstructions:
+                    for PressKey in range(0,Instruction[1]):
+                        pyautogui.keyDown(Instruction[2])
+                        pyautogui.keyUp(Instruction[2])
+                                            
+    # Finish recipe
+    pyautogui.press('enter')
+    
+##### SETTINGS ####
 
 # Define game window and area regions
 WindowGame = {'top': 0, 'left': 0, 'width': 1920, 'height': 1080}
@@ -100,16 +125,20 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Paprika':'r' , 'Black Rice':'r' , 'Brown Rice':'r' , 
                    'Corn':'r' , 'Croutons':'r' , 'Mixed Veg':'v' , 
                    'Tuscan Beans':'b' , 'Candy Cookie':'a' , 'White Rice':'r' ,
-                   'Wild Rice':'r' , 'Soy Sauce':'o' , 'Clam':'l'} 
+                   'Wild Rice':'r' , 'Soy Sauce':'o' , 'Clam':'l', 
+                   'Raw Chop':'l'} 
 
 # Set stuff up
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files (x86)/Tesseract-OCR/tesseract'
 ImgWindowsHS = np.zeros([WindowsHS['height'],WindowsHS['width'],3,len(WindowsHS['left'])]).astype('uint8')
+pyautogui.PAUSE = 0.04
 DoneOpts1 = []
 DoneOpts2 = []
 HS_Capturing = 1
 AllRecipeOpts = [] 
 sct = mss.mss()
+
+##### DETERMINE HS OPTIONS   c####
 
 # Find and store holding station options
 while HS_Capturing == 1:
@@ -119,15 +148,17 @@ while HS_Capturing == 1:
         # Open the holding station
         print('Capturing holding station data!')
         pyautogui.keyDown('tab')  
+        time.sleep(0.04)
         pyautogui.keyDown('1')
-        time.sleep(.300)
+        time.sleep(0.04)
         pyautogui.keyUp('tab')
+        time.sleep(0.04)
         pyautogui.keyUp('1')
         
         # OCR for each page of the holding station, and store results
         for loopRecipeBuilder in range(0, 3):
             ImgCapt = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
-            AllRecipeOpts.append(TextScan(ImgCapt,WindowsTextRegions))
+            AllRecipeOpts.append(TextScanHSOpts(ImgCapt,WindowsTextRegions))
             pyautogui.keyDown('space')
             pyautogui.keyUp('space')
             HS_Capturing = 0
@@ -150,7 +181,7 @@ while 'Screen capturing':
         ImgWindowsHS[:,:,:,loopHSCap] = WindowExtractor(ImgGameWindow,WindowsHS,loopHSCap,0)
         
     # Extract hungry people wanting food NOW regions
-    
+    time.sleep(1)
     # For each holding station
     for loopHSMake in range(0,len(WindowsHS['left'])):
         # Check if a HS is free 
@@ -159,9 +190,11 @@ while 'Screen capturing':
                         
             # Open the holding station (can't use.hotkey because of releasing keys backwards)
             pyautogui.keyDown('tab')  
+            time.sleep(0.04)
             pyautogui.keyDown(str(loopHSMake+1))
-            time.sleep(.300)
+            time.sleep(0.04)
             pyautogui.keyUp('tab')
+            time.sleep(0.04)
             pyautogui.keyUp(str(loopHSMake+1))
             
             # Pick a recipe
@@ -199,14 +232,7 @@ while 'Screen capturing':
             pyautogui.keyUp(randopt)
             
             # Threshold and scan for instructions
-            time.sleep(2)
-            ImgInstructionInputBig = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
-            ImgInstruction =cv2.cvtColor(WindowExtractor(ImgInstructionInputBig,WindowsFoodRecipe,0,0),cv2.COLOR_RGB2GRAY)
-            ImgInstruction[ImgInstruction==213] = 255 
-            ImgInstruction[ImgInstruction!=255] = 0 
-            wordstoremove = re.compile(r'\W*\b\w{1,1}\b')
-            RawInstruction = pytesseract.image_to_string(ImgInstruction,config='-psm 11').replace('\n', ' ').replace('ENTER','')
-            #sRawInstruction = wordstoremove.sub('', RawInstruction)
+            RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
             print('    Found Recipe: ' + RawInstruction)
             
             # Get number of red, blue, green instructions
@@ -216,12 +242,9 @@ while 'Screen capturing':
             print('    Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
             
             # Perform instructions
-            for Instruction in AllInstructions:
-                for PressKey in range(0,Instruction[1]):
-                    pyautogui.keyDown(Instruction[2])
-                    pyautogui.keyUp(Instruction[2])
+            InstructionFollower(AllInstructions)
                                         
             # Finish recipe
             pyautogui.press('enter')
             
-            break
+

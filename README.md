@@ -153,8 +153,6 @@ Current status: Can make the vast majority of all Holding Station Recipes and Si
     
     - Black Rice
     
-    - Roasted Cauliflower
-    
     - Brown Rice
     
     - Side Chilli
@@ -193,4 +191,4 @@ Current status: Can make the vast majority of all Holding Station Recipes and Si
     
     HS OPTIONAL: Yaki Tomorokoshi
     
-    SIDES: Peas, Mashed Potatoes, Refried Beans, Kimchi, Onigiri, 
+    SIDES: Peas, Mashed Potatoes, Refried Beans, Kimchi, Onigiri, Roasted Cauliflower

@@ -118,7 +118,7 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Wh.Rice':'r' , 'G.Beans':'e' , 'Bowtie N.':'n' ,
                    'B.Tortilla':'t' , 'B.Broccoli':'r' , 'Wheat B.':'h' ,
                    'Close':'l' , 'Turkey':'u' , 'Paper Liner':'n' , 
-                   'Blueberry':'l' , 'Banana':'a', 'Chocolate':'a' , 
+                   'Blueberry':'l' , 'Banana':'a', 'Chocolate':'h' , 
                    'Raw Chop':'l' , 'Sauce':'a' , "Pig's Blood":'b' , 
                    'Fine Peanut':'p' , 'P.Onions':'n' , 'Cauliflower':'a' , 
                    'Cucumber':'u' , 'Cut Parsley':'p' , 'Choc. Cr':'h' , 
@@ -131,7 +131,17 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Corn':'r' , 'Croutons':'r' , 'Mixed Veg':'v' , 
                    'Tuscan Beans':'b' , 'Candy Cookie':'a' , 'White Rice':'r' ,
                    'Wild Rice':'r' , 'Soy Sauce':'o' , 'Clam':'l', 
-                   'Raw Chop':'l'} 
+                   'Raw Chop':'l' , 'Gr. Chicken':'k' , 'Top Bun':'o' , 
+                   'Guacemole':'u' , 'Sprouts':'p' , 'Pineapple':'i' , 
+                   'Avocado':'v' , 'Peas':'e' , 'Cranberry':'r' , 
+                   'Spicy Chk.':'s' , 'Parmesan':'r' , 'Biscuit':'i' , 
+                   'Croissant':'r' , 'Pecan':'e' , 'S.Pasta':'p' , 
+                   'Grd.Meat':'m' , 'B.Sugar':'s' , 'Chili':'h' , 
+                   'Lobster Sauce':'o' , 'Citrus Mayo':'m' , 'Lemon Aioli':'a',
+                   'Arti.Sauce':'r', 'C.Apple':'a' , 'Drumstick':'r' , 
+                   'Oysters':'y' , 'Caviar':'a' , 'Cocktail':'o' , 
+                   'C.Dates':'d' , 'C.Green':'g' , 'C.Red':'r' , 'C.White':'w',
+                   'C.Tamarind':'t' , 'Peach':'e' , 'Texas':'x'} 
 
 ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
                    '7':'7' , '8':'8' , '9':'9' , '10':'0' , '11':'-' , 
@@ -282,21 +292,23 @@ while 'Screen capturing':
             # Get section of screen
             ImgServeRegion = WindowExtractor(ImgGameWindow,WindowsCookRegion,0,loopServeRegionMake)
             
-            # Template match for white outline square, yellow, red.
-            if np.sum(ImgServeRegion == [255,255,255]) > 750:
+            # Determine if food can be served, or is currently cooking
+            if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 37640:
                 # If food is currently cooking, do nothing
                 print('    Cannot serve this iteration.')
-            elif np.sum(ImgServeRegion == [0,36,255]) > 750:     
+            elif np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))) > 750:     
                 # If food currently waiting for HS required stage, do nothing
-                print('    Food at station is waiting for HS.')
+                print(np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))))
+                print('    Food is waiting for HS.')
             else:    
-                # Enter serving window, and determine if food was insta-served
+                # Attempt to insta-serve
                 pyautogui.keyDown(ServingKeyBinds[str(loopServeRegionMake+1)])
+                time.sleep(0.05)
                 pyautogui.keyUp(ServingKeyBinds[str(loopServeRegionMake+1)])
                 
                 ImgInstaTester = WindowExtractor(cv2.cvtColor(np.array(sct.grab(WindowGame)), 
                                                          cv2.COLOR_RGBA2RGB),WindowsFoodRecipe,0,0)
-                if np.sum(ImgInstaTester == [73,73,73]) < 1000: 
+                if np.sum(cv2.inRange(ImgInstaTester,np.array([73,73,73]),np.array([73,73,73]))) < 1000: 
                     print('        Food insta-served')
                 else:
                     # If extra steps required
@@ -312,4 +324,4 @@ while 'Screen capturing':
                     
                     # Perform instructions
                     InstructionFollower(AllInstructions)
-                
+                    time.sleep(0.1)

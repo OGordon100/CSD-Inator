@@ -22,6 +22,8 @@ def TextScanHSOpts (ImgGame,WindowBounds):
                 ImgFoodInputBig[(ImgFoodInputBig[:,:,0]==ImgFoodInputBig[:,:,1]) & (ImgFoodInputBig[:,:,0]==ImgFoodInputBig[:,:,2])] = 255
                 WindowBig = [ImgFoodInputBig!=[255,255,255]][0].astype('uint8')*255
                 
+                # Window out chores?
+                
                 # Find all avaliable keypresses
                 RecipeOpts = []
                 IterFindOpts = 0
@@ -30,6 +32,10 @@ def TextScanHSOpts (ImgGame,WindowBounds):
                         ImgInput = WindowExtractor(WindowBig,WindowBounds,loopImgFindx,loopImgFindy)
 
                         FoundThing = pytesseract.image_to_string(ImgInput[:,:,0],config='-psm 10')
+                        
+                        # Add code here to deal with chores
+                        
+                        # Turn into parsed raw text
                         if FoundThing != '':
                             RecipeOpts.append(FoundThing)
                         IterFindOpts += 1
@@ -272,7 +278,7 @@ while 'Screen capturing':
             
             # Threshold and scan for instructions
             RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
-            print('            Found Recipe: ' + RawInstruction)
+            print('            Raw Text: ' + RawInstruction)
             
             # Get number of red, blue, green instructions
             
@@ -293,17 +299,16 @@ while 'Screen capturing':
             ImgServeRegion = WindowExtractor(ImgGameWindow,WindowsCookRegion,0,loopServeRegionMake)
             
             # Determine if food can be served, or is currently cooking
-            if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 37640:
+            if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 50000:
                 # If food is currently cooking, do nothing
-                print('    Cannot serve this iteration.')
+                print('    Blocked/Waiting for Cooking.')
             elif np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))) > 750:     
                 # If food currently waiting for HS required stage, do nothing
-                print(np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))))
                 print('    Food is waiting for HS.')
             else:    
                 # Attempt to insta-serve
                 pyautogui.keyDown(ServingKeyBinds[str(loopServeRegionMake+1)])
-                time.sleep(0.05)
+                time.sleep(0.07)
                 pyautogui.keyUp(ServingKeyBinds[str(loopServeRegionMake+1)])
                 
                 ImgInstaTester = WindowExtractor(cv2.cvtColor(np.array(sct.grab(WindowGame)), 
@@ -316,7 +321,7 @@ while 'Screen capturing':
                     
                     # Threshold and scan for instructions
                     RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
-                    print('            Found Recipe: ' + RawInstruction)
+                    print('            Raw Text: ' + RawInstruction)
                     
                     # Build out list to perform
                     AllInstructions = InstructionMaker(RawInstruction)

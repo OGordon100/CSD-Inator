@@ -89,27 +89,22 @@ WindowsHS = {'top':[29],
              'left':[336,458,580,702,824,946,1068,1190],
              'width':112,
              'height':39}
-
 WindowsServeRegion = {'top':[102,168,234,300,366,432,498,564,630,696,762,828,894,960],
              'left':[0],
              'width':44,
              'height':56}
-
 WindowsCookRegion = {'top':[131,197,263,329,395,461,527,593,659,725,791,857,923,989],
              'left':[66],
              'width':258,
              'height':33}
-
 WindowsWaiting = {'top':[105],
              'left':[62,458],
              'width':230,
              'height':58}
-
 WindowsTextRegions = {'top':[155,245,340,430],
              'left':[1625,1785],
              'width':48,
              'height':48}
-
 WindowsFoodRecipe = {'top':[875],
              'left':[460],
              'width':1000,
@@ -149,11 +144,13 @@ ImgWindowsServe = np.zeros([WindowsServeRegion['height'],WindowsServeRegion['wid
 pyautogui.PAUSE = 0.04
 DoneOpts1 = []
 DoneOpts2 = []
+DoneOpts11 = []
+DoneOpts22 = []
 HS_Capturing = 1
 AllRecipeOpts = [] 
 sct = mss.mss()
 
-##### DETERMINE HS OPTIONS   c####
+##### DETERMINE HS OPTIONS ####
 
 # Find and store holding station options
 while HS_Capturing == 1:
@@ -186,7 +183,7 @@ while HS_Capturing == 1:
 # Give animations time to finish, so first HS is 1, not 2.
 time.sleep(2)
 
-# A NEW DAY OF FEASTING IS AT HAND
+# A NEW DAWN OF FEASTING IS AT HAND
 while 'Screen capturing':
     # Get raw pixels from the screen, save it to a numpy array
     ImgGameWindow = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
@@ -209,22 +206,34 @@ while 'Screen capturing':
                         
             # Open the holding station (can't use.hotkey because of releasing keys backwards)
             pyautogui.keyDown('tab')  
-            time.sleep(0.06)
+            time.sleep(0.08)
             pyautogui.keyDown(str(loopHSMake+1))
-            time.sleep(0.06)
+            time.sleep(0.08)
             pyautogui.keyUp('tab')
-            time.sleep(0.06)
+            time.sleep(0.08)
             pyautogui.keyUp(str(loopHSMake+1))
+            
+            # Create list of already completed options, but remove from list if we are revisiting the HS that option was made in
+            for RemoverLoop1 in DoneOpts11:
+               if RemoverLoop1[1] == loopHSMake+1:
+                   DoneOpts1.remove(RemoverLoop1[0])
+                   DoneOpts11.remove(RemoverLoop1)
+            for RemoverLoop2 in DoneOpts22:
+               if RemoverLoop2[1] == loopHSMake+1:
+                   DoneOpts2.remove(RemoverLoop2[0])
+                   DoneOpts22.remove(RemoverLoop2)
+                   
+            FiltOpts1 = set(AllRecipeOpts[0])-set(DoneOpts1)
+            FiltOpts2 = set(AllRecipeOpts[1])-set(DoneOpts2)
             
             # Pick a recipe
             HSWindowNum = 1
-            FiltOpts1 = set(AllRecipeOpts[0])-set(DoneOpts1)
-            FiltOpts2 = set(AllRecipeOpts[1])-set(DoneOpts2)
             if (HSWindowNum == 1) & (bool(FiltOpts1) == 1):
                 # Make a HS required recipe
                 print('    Making a HS required recipe')
                 randopt = random.sample(FiltOpts1,1)[0].lower()
                 DoneOpts1.append(randopt.upper())
+                DoneOpts11.append([randopt.upper(),loopHSMake+1])
             elif (bool(FiltOpts1) == 0):
                 print('    All HS required recipes made')
                 HSWindowNum += 1
@@ -235,6 +244,7 @@ while 'Screen capturing':
                     print('    Making a HS optional recipe')
                     randopt = random.sample(FiltOpts2,1)[0].lower()
                     DoneOpts2.append(randopt.upper())
+                    DoneOpts22.append([randopt.upper(),loopHSMake+1])
                 else:
                     # Make a side
                     print('    All HS optional recipes made \n    Making a side')
@@ -272,10 +282,11 @@ while 'Screen capturing':
             # Get section of screen
             ImgServeRegion = WindowExtractor(ImgGameWindow,WindowsCookRegion,0,loopServeRegionMake)
             
-            if np.sum(ImgServeRegion == [255,255,255]) > 500:
+            # Template match for white outline square, yellow, red.
+            if np.sum(ImgServeRegion == [255,255,255]) > 750:
                 # If food is currently cooking, do nothing
                 print('    Cannot serve this iteration.')
-            elif np.sum(ImgServeRegion == [0,36,255]) > 500:     
+            elif np.sum(ImgServeRegion == [0,36,255]) > 750:     
                 # If food currently waiting for HS required stage, do nothing
                 print('    Food at station is waiting for HS.')
             else:    
@@ -285,7 +296,7 @@ while 'Screen capturing':
                 
                 ImgInstaTester = WindowExtractor(cv2.cvtColor(np.array(sct.grab(WindowGame)), 
                                                          cv2.COLOR_RGBA2RGB),WindowsFoodRecipe,0,0)
-                if np.sum(ImgInstaTester == [73,73,73]) < 2000: 
+                if np.sum(ImgInstaTester == [73,73,73]) < 1000: 
                     print('        Food insta-served')
                 else:
                     # If extra steps required

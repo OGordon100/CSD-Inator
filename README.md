@@ -1,17 +1,14 @@
 # CSD_AI
-A program (eventually!) capable of beating the "stress" mode of the game Cook Serve Delicious 2 (and earning a very rare achievment)
 
-Current status: Can make the vast majority of all Holding Station Recipes and Sides, but NOT serve
+A script capable of beating the "stress" mode of Cook Serve Delicious 2, earning impossible achievments along the way! Currently, foods can be made in the holding stations according to priority (Required & Optional foods will only be made once, but all of them will be made), and served.
+
+Because of some non-firstletter keybinds not being standard across recipes, and because natural language parsing is not included (i.e. there is no way to tell that Ground Meat = G. Meat = Grnd. Mt), some foods are incompatible. With vanilla keybinds, here are the supported recipes:
 
 # SUPPORTED FOODS:
 
   HS REQUIRED: 
   
-    - French Toast
-    
     - Biscuits & Gravy
-    
-    - Oatmeal
     
     - Chilli
     
@@ -21,6 +18,8 @@ Current status: Can make the vast majority of all Holding Station Recipes and Si
     
     - Egg Drop Soup
     
+    - French Toast
+    
     - Brisket Slices
     
     - Turkey Slices
@@ -29,42 +28,28 @@ Current status: Can make the vast majority of all Holding Station Recipes and Si
     
     - Sausage Slices
     
-    - Muffins
+    - Oatmeal
     
     - Pretzel
     
-    - Chicken Sandwhich
+    - Chicken Sandwich
     
     - Lamb Chop
-    
-    - Meatloaf
     
     - Ribs
     
     - Pig's Blood Cake
     
-    - Tabbouleh
-    
     - Spaghetti
     
-    - Chopped Brisket Sandwhich
+    - Chopped Brisket Sandwich
     
     - Prime Rib
     
-    - Roast Beef Sandwhich
-    
-    - Slice of Pie
-    
-    - Deluxe Nachos
-    
-    - Pulled Pork Sandwhich
+    - Roast Beef Sandwich
     
   HS OPTIONAL:
-  
-    - Hamburger
-    
-    - Hotdog
-    
+     
     - Bean Burger
     
     - Turkey Leg
@@ -79,15 +64,15 @@ Current status: Can make the vast majority of all Holding Station Recipes and Si
     
     - Sopapillas
     
-    - Cannoli
-    
     - Fried Shrimp
     
     - Griddle Eggs
     
-    - Grilled Chicken Sandwhich
+    - Grilled Chicken Sandwich
     
     - Fried Fish
+    
+    - Pulled Pork Sandwich
     
   SIDES:
   
@@ -100,8 +85,6 @@ Current status: Can make the vast majority of all Holding Station Recipes and Si
     - Corn on the Cob
     
     - Edamame
-    
-    - Peas
     
     - Scrambled Eggs
     
@@ -185,10 +168,54 @@ Current status: Can make the vast majority of all Holding Station Recipes and Si
     
     - Tazukuri
     
+STANDARD RECIPES:
+
+    - Breakfast Sandwich
+    
+    - Pancakes
+    
+    - Quesadilla
+    
+    - Salisbury Steak
+    
+    - Steak
+    
+    - Bananas Foster
+    
+    - Corn Chip Pie
+    
+    - Crab Cakes
+    
+    - Crab Legs
+    
+    - Dessert Shooters
+    
+    - Fried Chicken
+    
+    - Oysters
+    
+    - Samosas
+    
+    - Stadium Nachos
+    
+DRINKS:
+
+    - Coffee
+    
+    - Iced Tea
+    
+    - Red Wine
+    
+    - White Wine
+    
 # Unsupported Foods:
 
-    HS REQUIRED: Lasagne, Pizza by the Slice, Tiramisu, Japanese Fried Rise
+    HS REQUIRED: Lasagne, Pizza by the Slice, Tiramisu, Japanese Fried Rise, Muffins
     
     HS OPTIONAL: Yaki Tomorokoshi
     
     SIDES: Peas, Mashed Potatoes, Refried Beans, Kimchi, Onigiri, Roasted Cauliflower
+    
+    STANDARD RECIPES: Tres Leches, Funnel Cake, Chicken Breast, Creme Brulee, Whole Cakes
+
+    DRINKS: Beer, Juice Bar

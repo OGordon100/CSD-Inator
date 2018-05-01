@@ -41,6 +41,21 @@ def TextScanHSOpts (ImgGame,WindowBounds):
                         IterFindOpts += 1
                 return(RecipeOpts)
 
+# Define function to follow through recipe finding & creation
+def FoodMaker (WindowGame,WindowRegion):
+    # Threshold and scan for instructions
+    RawInstruction = TextScanRecipe(WindowGame,WindowRegion)
+    print('            Raw Text: ' + str(RawInstruction[0]))
+    
+    # Build out list to perform
+    AllInstructions = InstructionMaker(RawInstruction)
+    print('            Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
+    
+    # Perform instructions
+    InstructionFollower(AllInstructions)
+    time.sleep(0.1)
+                
+
 # Define function to threshold and determine ingredients avaliable for a recipe
 def TextScanRecipe (WindowGame,WindowsFoodRecipe): 
     time.sleep(0.1)
@@ -151,7 +166,7 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Blueberry':'l' , 'Banana':'a', 'Chocolate':'h' , 
                    'Raw Chop':'l' , 'Sauce':'a' , "Pig's Blood":'b' , 
                    'Fine Peanut':'p' , 'P.Onions':'n' , 'Cauliflower':'a' , 
-                   'Cucumber':'u' , 'Cut Parsley':'p' , 'Choc. Cr':'h' , 
+                   'Cucumber':'u' , 'Cut Parsley':'p' , 'Choc. Cr.':'h' , 
                    'Coconut Mer.':'o' , 'Coconut Shav.':'o' , 'Covered':'v' , 
                    'R.Chow. Mein':'h' , 'O.Shoots':'s' , 'Cucumbers':'u' , 
                    'Butter':'u' , 'Black Beans':'a' , 'Cooking Oil':'o' , 
@@ -172,7 +187,11 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Oysters':'y' , 'Caviar':'a' , 'Cocktail':'o' , 
                    'C.Dates':'d' , 'C.Green':'g' , 'C.Red':'r' , 'C.White':'w',
                    'C.Tamarind':'t' , 'Peach':'e' , 'Texas':'x' , 
-                   'Pretzel Bun':'z'} 
+                   'Pretzel Bun':'z' , 'Pumpkin':'u' , 'Olives':'v' ,
+                   'Refried Beans':'b' , 'Black Beans':'a' , 'Guac':'u' ,
+                   'S.Mushrooms':'m' , 'S.Onions':'n' , 'Fr.iEgg':'e' , 
+                   'Peppermint':'m' , 'Choc.Chips':'h' , 'Caramel':'a' , 
+                   'P.Sugar':'s' , 'Chocolate S.':'o' } 
 
 ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
                    '7':'7' , '8':'8' , '9':'9' , '10':'0' , '11':'-' , 
@@ -190,7 +209,7 @@ DoneOpts11 = []
 DoneOpts22 = []
 AllRecipeOpts = [] 
 pyautogui.PAUSE = 0.05
-PauseTime = 0.08
+PauseTime = 0.07
 ColourBlobSize = 155040     # Number of pixels a purple/red/yellow blow takes up
 
 ##### DETERMINE HS OPTIONS ####
@@ -223,28 +242,31 @@ while HS_Capturing == 1:
         pyautogui.keyUp ('enter')
         break
     
-# Give animations time to finish, so first HS is 1, not 2.
-time.sleep(2)
+# Start with a side to increase waiting time
+pyautogui.keyDown('tab')  
+time.sleep(PauseTime)
+pyautogui.keyDown('8')
+time.sleep(PauseTime)
+pyautogui.keyUp('tab')
+time.sleep(PauseTime)
+pyautogui.keyUp('8')
+pyautogui.hotkey('space')
+pyautogui.hotkey('space')
+pyautogui.keyDown('a')
+pyautogui.keyUp('a')    
+FoodMaker(WindowGame,WindowsFoodRecipe)
 
 # A NEW DAWN OF FEASTING IS AT HAND
 while 'Screen capturing':
     # Get raw pixels from the screen, save it to a numpy array
     ImgGameWindow = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
     
-    # Extract holding station regions
+    # For each holding station
     for loopHSCap in range(0,len(WindowsHS['left'])):
         ImgWindowsHS[:,:,:,loopHSCap] = WindowExtractor(ImgGameWindow,WindowsHS,loopHSCap,0)
         
-    # Extract hungry people wanting food NOW regions
-    for loopServeRegionCap in range(0,len(WindowsServeRegion['top'])):
-        ImgWindowsServe[:,:,:,loopServeRegionCap] = WindowExtractor(ImgGameWindow,WindowsServeRegion,0,loopServeRegionCap)
-        
-    # Rest for a second    
-    time.sleep(0.5)
-    # For each holding station
     for loopHSMake in range(0,len(WindowsHS['left'])):
-        # Take photo here (and conversely below) to be more up to date!
-        
+       
         # Check if a HS is free 
         if np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake])) == 38.0:
             print('\nHolding Station ' + str(loopHSMake+1) + ' Free!')
@@ -266,8 +288,7 @@ while 'Screen capturing':
             for RemoverLoop2 in DoneOpts22:
                if RemoverLoop2[1] == loopHSMake+1:
                    DoneOpts2.remove(RemoverLoop2[0])
-                   DoneOpts22.remove(RemoverLoop2)
-                   
+                   DoneOpts22.remove(RemoverLoop2)                
             FiltOpts1 = set(AllRecipeOpts[0])-set(DoneOpts1)
             FiltOpts2 = set(AllRecipeOpts[1])-set(DoneOpts2)
             
@@ -305,18 +326,12 @@ while 'Screen capturing':
             pyautogui.keyDown(randopt)
             pyautogui.keyUp(randopt)
             
-            # Threshold and scan for instructions
-            RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
-            print('            Raw Text: ' + str(RawInstruction[0]))
-                        
-            # Build out list to perform
-            AllInstructions = InstructionMaker(RawInstruction)
-            print('            Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
-            
-            # Perform instructions
-            InstructionFollower(AllInstructions)
+            FoodMaker(WindowGame,WindowsFoodRecipe)
         
     # For each serving region
+    for loopServeRegionCap in range(0,len(WindowsServeRegion['top'])):
+        ImgWindowsServe[:,:,:,loopServeRegionCap] = WindowExtractor(ImgGameWindow,WindowsServeRegion,0,loopServeRegionCap)
+    
     for loopServeRegionMake in range(0,len(WindowsServeRegion['top'])):
         # Check if a serving region requires service
         if np.sum(ImgWindowsServe[:,:,:,loopServeRegionMake] == [255,255,255]) > 0:
@@ -326,12 +341,12 @@ while 'Screen capturing':
             ImgServeRegion = WindowExtractor(ImgGameWindow,WindowsCookRegion,0,loopServeRegionMake)
             
             # Determine if food can be served, or is currently cooking
-            if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 50000:
+            if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 60000:
                 # If food is currently cooking, do nothing
                 print('    Blocked/Waiting for Cooking.')
-            elif np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))) > 750:     
-                # If food currently waiting for HS required stage, do nothing
-                print('    Food is waiting for HS.')
+            #elif np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))) > 750:     
+            #    # If food currently waiting for HS required stage, do nothing
+            #m    print('    Food is waiting for HS.')
             else:    
                 # Attempt to insta-serve
                 pyautogui.keyDown(ServingKeyBinds[str(loopServeRegionMake+1)])
@@ -345,15 +360,5 @@ while 'Screen capturing':
                 else:
                     # If extra steps required
                     print('        Extra steps required')
-                    
-                    # Threshold and scan for instructions
-                    RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
-                    print('            Raw Text: ' + str(RawInstruction[0]))
-                    
-                    # Build out list to perform
-                    AllInstructions = InstructionMaker(RawInstruction)
-                    print('            Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
-                    
-                    # Perform instructions
-                    InstructionFollower(AllInstructions)
-                    time.sleep(0.1)
+                    FoodMaker(WindowGame,WindowsFoodRecipe)
+                    time.sleep(0.06)

@@ -14,6 +14,12 @@ Because of some non-firstletter keybinds not being standard across recipes, and 
     
     - Stew
     
+    - Chowder
+    
+    - Gumbo
+    
+    - Soup
+    
     - Corndogs
     
     - Egg Drop Soup
@@ -37,9 +43,11 @@ Because of some non-firstletter keybinds not being standard across recipes, and 
     - Lamb Chop
     
     - Ribs
-    
+   
     - Pig's Blood Cake
-    
+   
+    - Tabbouleh
+   
     - Spaghetti
     
     - Chopped Brisket Sandwich
@@ -47,6 +55,14 @@ Because of some non-firstletter keybinds not being standard across recipes, and 
     - Prime Rib
     
     - Roast Beef Sandwich
+    
+    - Slice of Pie
+    
+    - Chow Mein
+    
+    - Deluxe Nachos
+    
+    - Pulled Pork Sandwich
     
   HS OPTIONAL:
      
@@ -62,6 +78,10 @@ Because of some non-firstletter keybinds not being standard across recipes, and 
     
     - Chimichanga
     
+    - Hamburger
+    
+    - Hot Dog
+    
     - Sopapillas
     
     - Fried Shrimp
@@ -72,7 +92,8 @@ Because of some non-firstletter keybinds not being standard across recipes, and 
     
     - Fried Fish
     
-    - Pulled Pork Sandwich
+    - Cannnoli  
+   
     
   SIDES:
   
@@ -207,6 +228,8 @@ DRINKS:
     - Red Wine
     
     - White Wine
+    
+CHORES:
     
 # Unsupported Foods:
 

@@ -54,7 +54,6 @@ def FoodMaker (WindowGame,WindowRegion):
     # Perform instructions
     InstructionFollower(AllInstructions)
     time.sleep(0.1)
-                
 
 # Define function to threshold and determine ingredients avaliable for a recipe
 def TextScanRecipe (WindowGame,WindowsFoodRecipe): 
@@ -191,7 +190,8 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Refried Beans':'b' , 'Black Beans':'a' , 'Guac':'u' ,
                    'S.Mushrooms':'m' , 'S.Onions':'n' , 'Fr.iEgg':'e' , 
                    'Peppermint':'m' , 'Choc.Chips':'h' , 'Caramel':'a' , 
-                   'P.Sugar':'s' , 'Chocolate S.':'o' } 
+                   'P.Sugar':'s' , 'Chocolate S.':'o' , 'Blueberries':'l' , 
+                   'Choe Crisps':'h'} 
 
 ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
                    '7':'7' , '8':'8' , '9':'9' , '10':'0' , '11':'-' , 
@@ -208,7 +208,7 @@ DoneOpts2 = []
 DoneOpts11 = []
 DoneOpts22 = []
 AllRecipeOpts = [] 
-pyautogui.PAUSE = 0.05
+pyautogui.PAUSE = 0.06
 PauseTime = 0.07
 ColourBlobSize = 155040     # Number of pixels a purple/red/yellow blow takes up
 
@@ -346,7 +346,7 @@ while 'Screen capturing':
                 print('    Blocked/Waiting for Cooking.')
             #elif np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))) > 750:     
             #    # If food currently waiting for HS required stage, do nothing
-            #m    print('    Food is waiting for HS.')
+            #    print('    Food is waiting for HS.')
             else:    
                 # Attempt to insta-serve
                 pyautogui.keyDown(ServingKeyBinds[str(loopServeRegionMake+1)])
@@ -361,4 +361,5 @@ while 'Screen capturing':
                     # If extra steps required
                     print('        Extra steps required')
                     FoodMaker(WindowGame,WindowsFoodRecipe)
-                    time.sleep(0.06)
+                    
+# Need to look for burning food and prioritise it!

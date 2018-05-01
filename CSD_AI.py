@@ -44,17 +44,29 @@ def TextScanHSOpts (ImgGame,WindowBounds):
 # Define function to threshold and determine ingredients avaliable for a recipe
 def TextScanRecipe (WindowGame,WindowsFoodRecipe): 
     time.sleep(0.1)
+    
+    # Get image
     ImgInstructionInputBig = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
-    ImgInstruction =cv2.cvtColor(WindowExtractor(ImgInstructionInputBig,WindowsFoodRecipe,0,0),cv2.COLOR_RGB2GRAY)
+    ImgInstructionRGB = WindowExtractor(ImgInstructionInputBig,WindowsFoodRecipe,0,0)      
+    ImgInstruction = cv2.cvtColor(ImgInstructionRGB,cv2.COLOR_RGB2GRAY)
+    
+    # Get number of purple, red, yellow instructions
+    NumPurple = np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([201,65,122]),np.array([201,65,122])))/ColourBlobSize)
+    NumRed = np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([65,65,201]),np.array([65,65,201])))/ColourBlobSize)
+    NumYellow = np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([41,138,189]),np.array([41,138,189])))/ColourBlobSize)
+    PageNums = [NumPurple,NumRed,NumYellow]
+    
+    # Get raw instruction    
     ImgInstruction[ImgInstruction==213] = 255 
     ImgInstruction[ImgInstruction!=255] = 0 
     RawInstruction = pytesseract.image_to_string(ImgInstruction,config='-psm 11').replace('\n', ' ').replace('ENTER','')
-    return(RawInstruction)
+    return(RawInstruction,PageNums)
     
 # Define function to build a set of instructions to follow
 def InstructionMaker (RawInstruction):
     RecipeInstructions = []
-    for IngredientItem in RawInstruction.split("  "):
+    
+    for IngredientItem in RawInstruction[0].split("  "):
         
         # Get ingredient name
         Ingredient = IngredientItem.split(" (")[0]
@@ -74,6 +86,13 @@ def InstructionMaker (RawInstruction):
         
         # Build the instruction!
         RecipeInstructions.append([Ingredient, RepeatNum, KeyCombo])
+     
+    print('RecipeInstructions')
+    print(RawInstruction[1])
+    # Add in "space" instructions if new page is needed
+    #for SpacePress in np.cumsum(RawInstruction[1])[::-1]:
+    #    RecipeInstructions.insert(int(SpacePress)-1,['NextPage',1,'space'])
+    
     return(RecipeInstructions)   
 
 # Define function to follow instructions
@@ -155,16 +174,18 @@ ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
 
 # Set stuff up
 pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files (x86)/Tesseract-OCR/tesseract'
+sct = mss.mss()
+HS_Capturing = 1
 ImgWindowsHS = np.zeros([WindowsHS['height'],WindowsHS['width'],3,len(WindowsHS['left'])]).astype('uint8')
 ImgWindowsServe = np.zeros([WindowsServeRegion['height'],WindowsServeRegion['width'],3,len(WindowsServeRegion['top'])]).astype('uint8')
-pyautogui.PAUSE = 0.04
 DoneOpts1 = []
 DoneOpts2 = []
 DoneOpts11 = []
 DoneOpts22 = []
-HS_Capturing = 1
 AllRecipeOpts = [] 
-sct = mss.mss()
+pyautogui.PAUSE = 0.05
+PauseTime = 0.08
+ColourBlobSize = 155040     # Number of pixels a purple/red/yellow blow takes up
 
 ##### DETERMINE HS OPTIONS ####
 
@@ -176,11 +197,11 @@ while HS_Capturing == 1:
         # Open the holding station
         print('Capturing holding station data!')
         pyautogui.keyDown('tab')  
-        time.sleep(0.06)
+        time.sleep(PauseTime)
         pyautogui.keyDown('1')
-        time.sleep(0.06)
+        time.sleep(PauseTime)
         pyautogui.keyUp('tab')
-        time.sleep(0.06)
+        time.sleep(PauseTime)
         pyautogui.keyUp('1')
         
         # OCR for each page of the holding station, and store results
@@ -216,17 +237,19 @@ while 'Screen capturing':
     time.sleep(0.5)
     # For each holding station
     for loopHSMake in range(0,len(WindowsHS['left'])):
+        # Take photo here (and conversely below) to be more up to date!
+        
         # Check if a HS is free 
         if np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake])) == 38.0:
             print('\nHolding Station ' + str(loopHSMake+1) + ' Free!')
                         
             # Open the holding station (can't use.hotkey because of releasing keys backwards)
             pyautogui.keyDown('tab')  
-            time.sleep(0.08)
+            time.sleep(PauseTime)
             pyautogui.keyDown(str(loopHSMake+1))
-            time.sleep(0.08)
+            time.sleep(PauseTime)
             pyautogui.keyUp('tab')
-            time.sleep(0.08)
+            time.sleep(PauseTime)
             pyautogui.keyUp(str(loopHSMake+1))
             
             # Create list of already completed options, but remove from list if we are revisiting the HS that option was made in
@@ -278,10 +301,8 @@ while 'Screen capturing':
             
             # Threshold and scan for instructions
             RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
-            print('            Raw Text: ' + RawInstruction)
-            
-            # Get number of red, blue, green instructions
-            
+            print('            Raw Text: ' + str(RawInstruction[0]))
+                        
             # Build out list to perform
             AllInstructions = InstructionMaker(RawInstruction)
             print('            Instructions: ' + " ".join(str(elm) for elm in AllInstructions))
@@ -308,7 +329,7 @@ while 'Screen capturing':
             else:    
                 # Attempt to insta-serve
                 pyautogui.keyDown(ServingKeyBinds[str(loopServeRegionMake+1)])
-                time.sleep(0.07)
+                time.sleep(PauseTime)
                 pyautogui.keyUp(ServingKeyBinds[str(loopServeRegionMake+1)])
                 
                 ImgInstaTester = WindowExtractor(cv2.cvtColor(np.array(sct.grab(WindowGame)), 
@@ -321,7 +342,7 @@ while 'Screen capturing':
                     
                     # Threshold and scan for instructions
                     RawInstruction = TextScanRecipe(WindowGame,WindowsFoodRecipe)
-                    print('            Raw Text: ' + RawInstruction)
+                    print('            Raw Text: ' + str(RawInstruction[0]))
                     
                     # Build out list to perform
                     AllInstructions = InstructionMaker(RawInstruction)

@@ -51,9 +51,9 @@ def TextScanRecipe (WindowGame,WindowsFoodRecipe):
     ImgInstruction = cv2.cvtColor(ImgInstructionRGB,cv2.COLOR_RGB2GRAY)
     
     # Get number of purple, red, yellow instructions
-    NumPurple = np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([201,65,122]),np.array([201,65,122])))/ColourBlobSize)
-    NumRed = np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([65,65,201]),np.array([65,65,201])))/ColourBlobSize)
-    NumYellow = np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([41,138,189]),np.array([41,138,189])))/ColourBlobSize)
+    NumPurple = int(np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([201,65,122]),np.array([201,65,122])))/ColourBlobSize))
+    NumRed = int(np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([65,65,201]),np.array([65,65,201])))/ColourBlobSize))
+    NumYellow = int(np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([41,138,189]),np.array([41,138,189])))/ColourBlobSize))
     PageNums = [NumPurple,NumRed,NumYellow]
     
     # Get raw instruction    
@@ -87,11 +87,16 @@ def InstructionMaker (RawInstruction):
         # Build the instruction!
         RecipeInstructions.append([Ingredient, RepeatNum, KeyCombo])
      
-    print('RecipeInstructions')
-    print(RawInstruction[1])
-    # Add in "space" instructions if new page is needed
-    #for SpacePress in np.cumsum(RawInstruction[1])[::-1]:
-    #    RecipeInstructions.insert(int(SpacePress)-1,['NextPage',1,'space'])
+    # Add in instructions to go to new page if neccessary
+    if RawInstruction[1][1] == 0 & RawInstruction[1][0] != 0 & RawInstruction[1][2] != 0:
+        NumFilled = 2
+    else:
+        NumFilled = sum(x != 0 for x in RawInstruction[1]) - 1
+    RawInstructionFilt = RawInstruction[1][0:NumFilled]
+    for SpaceInsert in RawInstructionFilt[::-1]:
+        RecipeInstructions.insert(SpaceInsert,['NextPage',1,'space'])
+    
+    # Returnm
     
     return(RecipeInstructions)   
 
@@ -166,7 +171,8 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Arti.Sauce':'r', 'C.Apple':'a' , 'Drumstick':'r' , 
                    'Oysters':'y' , 'Caviar':'a' , 'Cocktail':'o' , 
                    'C.Dates':'d' , 'C.Green':'g' , 'C.Red':'r' , 'C.White':'w',
-                   'C.Tamarind':'t' , 'Peach':'e' , 'Texas':'x'} 
+                   'C.Tamarind':'t' , 'Peach':'e' , 'Texas':'x' , 
+                   'Pretzel Bun':'z'} 
 
 ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
                    '7':'7' , '8':'8' , '9':'9' , '10':'0' , '11':'-' , 

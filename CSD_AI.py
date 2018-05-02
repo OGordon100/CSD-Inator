@@ -282,7 +282,7 @@ while 'Screen capturing':
 
     # For each holding station (but not at rush hour)
     elapsed_time = time.time() - start_time   
-    if elapsed_time < 90 or elapsed_time in range(160,250) or elapsed_time > 310:
+    if elapsed_time < 90 or int(elapsed_time) in range(160,250) or elapsed_time > 310:
         for loopHSMake in range(0,len(WindowsHS['left'])):
             
             # Check if a HS is free 

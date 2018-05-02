@@ -230,6 +230,8 @@ DRINKS:
     - White Wine
     
 CHORES:
+
+    - All
     
 # Unsupported Foods:
 

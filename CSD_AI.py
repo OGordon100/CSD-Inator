@@ -63,7 +63,7 @@ def TextScanRecipe (WindowGame,WindowsFoodRecipe):
     ImgInstructionInputBig = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
     ImgInstructionRGB = WindowExtractor(ImgInstructionInputBig,WindowsFoodRecipe,0,0)      
     ImgInstruction = cv2.cvtColor(ImgInstructionRGB,cv2.COLOR_RGB2GRAY)
-    
+    cv2.imshow('test',ImgInstruction)
     # Get number of purple, red, yellow instructions
     NumPurple = int(np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([201,65,122]),np.array([201,65,122])))/ColourBlobSize))
     NumRed = int(np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([65,65,201]),np.array([65,65,201])))/ColourBlobSize))
@@ -72,6 +72,7 @@ def TextScanRecipe (WindowGame,WindowsFoodRecipe):
     
     # Get raw instruction    
     ImgInstruction[ImgInstruction==213] = 255 
+    ImgInstruction[ImgInstruction==192] = 255
     ImgInstruction[ImgInstruction!=255] = 0 
     RawInstruction = pytesseract.image_to_string(ImgInstruction,config='-psm 11').replace('\n', ' ').replace('ENTER','')
     return(RawInstruction,PageNums)
@@ -79,39 +80,44 @@ def TextScanRecipe (WindowGame,WindowsFoodRecipe):
 # Define function to build a set of instructions to follow
 def InstructionMaker (RawInstruction):
     RecipeInstructions = []
-    
-    for IngredientItem in RawInstruction[0].split("  "):
+
+    # If chore:
+    if RawInstruction[0] in ChoreInstructions:
+        RecipeInstructions = ChoreInstructions[RawInstruction[0]]
         
-        # Get ingredient name
-        Ingredient = IngredientItem.split(" (")[0]
-        
-        # Get number of repeat keypresses
-        RepeatSearch = re.search(r'[0-9]',IngredientItem)
-        if RepeatSearch:
-            RepeatNum = int(RepeatSearch.group(0))          
-        else:
-            RepeatNum = 1         
-        
-        # Get key to press: if not in special list, just take first letter
-        if Ingredient in SpecialKeyBinds:
-            KeyCombo = SpecialKeyBinds[Ingredient]
-        else:
-            KeyCombo = Ingredient[0].lower()
-        
-        # Build the instruction!
-        RecipeInstructions.append([Ingredient, RepeatNum, KeyCombo])
-     
-    # Add in instructions to go to new page if neccessary
-    if RawInstruction[1][1] == 0 & RawInstruction[1][0] != 0 & RawInstruction[1][2] != 0:
-        NumFilled = 2
+    # If not chore:
     else:
-        NumFilled = sum(x != 0 for x in RawInstruction[1]) - 1
-    RawInstructionFilt = RawInstruction[1][0:NumFilled]
-    for SpaceInsert in RawInstructionFilt[::-1]:
-        RecipeInstructions.insert(SpaceInsert,['NextPage',1,'space'])
+        for IngredientItem in RawInstruction[0].split("  "):
+            
+            # Get ingredient name
+            Ingredient = IngredientItem.split(" (")[0]
+            
+            # Get number of repeat keypresses
+            RepeatSearch = re.search(r'[0-9]',IngredientItem)
+            if RepeatSearch:
+                RepeatNum = int(RepeatSearch.group(0))          
+            else:
+                RepeatNum = 1         
+            
+            # Get key to press: if not in special list, just take first letter
+            if Ingredient in SpecialKeyBinds:
+                KeyCombo = SpecialKeyBinds[Ingredient]
+            else:
+                KeyCombo = Ingredient[0].lower()
+            
+            # Build the instruction!
+            RecipeInstructions.append([Ingredient, RepeatNum, KeyCombo])
+         
+        # Add in instructions to go to new page if neccessary
+        if RawInstruction[1][1] == 0 & RawInstruction[1][0] != 0 & RawInstruction[1][2] != 0:
+            NumFilled = 2
+        else:
+            NumFilled = sum(x != 0 for x in RawInstruction[1]) - 1
+        RawInstructionFilt = RawInstruction[1][0:NumFilled]
+        for SpaceInsert in RawInstructionFilt[::-1]:
+            RecipeInstructions.insert(SpaceInsert,['NextPage',1,'space'])
     
-    # Returnm
-    
+    # Return
     return(RecipeInstructions)   
 
 # Define function to follow instructions
@@ -191,7 +197,16 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'S.Mushrooms':'m' , 'S.Onions':'n' , 'Fr.iEgg':'e' , 
                    'Peppermint':'m' , 'Choc.Chips':'h' , 'Caramel':'a' , 
                    'P.Sugar':'s' , 'Chocolate S.':'o' , 'Blueberries':'l' , 
-                   'Choe Crisps':'h'} 
+                   'Choe Crisps':'h' , 'Texas Tea':'x' , '[tsl':'r' ,
+                   'After placing the ingredients. Dunk & Cook.':'d'} 
+
+ChoreInstructions = {'The restroom needs attention. thank you.':[['Flush', 1, 'f'],['Sanitise', 1, 's']] , 
+                     'Throw the trash. Thanks!':[['Throw', 1, 't'],['Sanitise', 1, 's']] , 
+                     'Throw the trash, Be sure to mash it in there!':[['Throw', 1, 't'],['Mash', 20, 'm'],['Sanitise', 1, 's']] ,
+                     'Please set the roach traps. thank you.':[['Set Traps', 1, 't'],['Sanitise', 1, 's']] ,
+                     'Please set the rat traps. thank you.':[['Lock', 1, 'l'],['Cheese', 1, 'c'],['Set', 1,'s']] ,
+                     'Load the dirty dishes into the rack. Wash. wait for the green light. and then  release the washer and unload the dishes.':[['Dishes', 1, 'd'],['Wash', 30, 'w'],['Release', 1,'r'],['Unload', 1,'u'],['Sanitise', 1,'s']] ,
+                     'Please clean the pest light trap. thank you.':[['Open Trap', 1, 't'],['Close Trap', 20, 'c'],['Sanitise', 1, 's']]}
 
 ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
                    '7':'7' , '8':'8' , '9':'9' , '10':'0' , '11':'-' , 
@@ -218,7 +233,7 @@ ColourBlobSize = 155040     # Number of pixels a purple/red/yellow blow takes up
 while HS_Capturing == 1:
     # Take constant images of screen until a Holding Station appears 
     ImgGameWindow = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
-    if np.round(np.mean(WindowExtractor(ImgGameWindow,WindowsHS,1,0))) == 38.0:
+    if int(np.round(np.mean(WindowExtractor(ImgGameWindow,WindowsHS,1,0)))) in range(36,40):
         # Open the holding station
         print('Capturing holding station data!')
         pyautogui.keyDown('tab')  
@@ -266,9 +281,9 @@ while 'Screen capturing':
         ImgWindowsHS[:,:,:,loopHSCap] = WindowExtractor(ImgGameWindow,WindowsHS,loopHSCap,0)
         
     for loopHSMake in range(0,len(WindowsHS['left'])):
-       
+        
         # Check if a HS is free 
-        if np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake])) == 38.0:
+        if int(np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake]))) in range(36,40):
             print('\nHolding Station ' + str(loopHSMake+1) + ' Free!')
                         
             # Open the holding station (can't use.hotkey because of releasing keys backwards)
@@ -294,7 +309,7 @@ while 'Screen capturing':
             
             # Pick a recipe
             HSWindowNum = 1
-            if (HSWindowNum == 1) & (bool(FiltOpts1) == 1):
+            if (HSWindowNum == 1) & (bool(FiltOpts1) == 1) & (len(AllRecipeOpts[0]) > 0):
                 # Make a HS required recipe
                 print('    Making a HS required recipe')
                 randopt = random.sample(FiltOpts1,1)[0].lower()
@@ -305,20 +320,21 @@ while 'Screen capturing':
                 HSWindowNum += 1
                 pyautogui.hotkey('space')
                 RecipeOpts = AllRecipeOpts[1]
-                if (HSWindowNum == 2) & (bool(FiltOpts2) == 1):
+                if (HSWindowNum == 2) & (bool(FiltOpts2) == 1) & (len(AllRecipeOpts[1]) > 0):
                     # Make a HS optional recipe
                     print('    Making a HS optional recipe')
                     randopt = random.sample(FiltOpts2,1)[0].lower()
                     DoneOpts2.append(randopt.upper())
                     DoneOpts22.append([randopt.upper(),loopHSMake+1])
-                else:
+                elif (len(AllRecipeOpts[2]) > 0):
                     # Make a side
                     print('    All HS optional recipes made \n    Making a side')
                     RecipeOpts = AllRecipeOpts[2]
                     HSWindowNum += 1
                     pyautogui.hotkey('space')
                     randopt = random.sample(RecipeOpts,1)[0].lower()
-            else:         
+            else:
+                print('    Nothing to make in a HS!')
                 break
             
             # Start the recipe!!!

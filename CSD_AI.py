@@ -223,8 +223,8 @@ DoneOpts2 = []
 DoneOpts11 = []
 DoneOpts22 = []
 AllRecipeOpts = [] 
-pyautogui.PAUSE = 0.07
-PauseTime = 0.07
+pyautogui.PAUSE = 0.08
+PauseTime = 0.12
 ColourBlobSize = 155040     # Number of pixels a purple/red/yellow blow takes up
 
 ##### DETERMINE HS OPTIONS ####
@@ -277,16 +277,14 @@ while 'Screen capturing':
     # Get raw pixels from the screen, save it to a numpy array
     ImgGameWindow = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
         
-    for loopHSCap in range(0,len(WindowsHS['left'])):
-        ImgWindowsHS[:,:,:,loopHSCap] = WindowExtractor(ImgGameWindow,WindowsHS,loopHSCap,0)
-
     # For each holding station (but not at rush hour)
     elapsed_time = time.time() - start_time   
     if elapsed_time < 90 or int(elapsed_time) in range(160,250) or elapsed_time > 310:
         for loopHSMake in range(0,len(WindowsHS['left'])):
             
             # Check if a HS is free 
-            if int(np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake]))) in range(36,40):
+            ImgWindowHS = WindowExtractor(ImgGameWindow,WindowsHS,loopHSMake,0)
+            if int(np.round(np.mean(ImgWindowHS))) in range(36,40):
                 print('\nHolding Station ' + str(loopHSMake+1) + ' Free!')
                             
                 # Open the holding station (can't use.hotkey because of releasing keys backwards)
@@ -346,21 +344,21 @@ while 'Screen capturing':
                 pyautogui.keyUp(randopt)
                 
                 FoodMaker(WindowGame,WindowsFoodRecipe)
-        
-    # For each serving region
-    for loopServeRegionCap in range(0,len(WindowsServeRegion['top'])):
-        ImgWindowsServe[:,:,:,loopServeRegionCap] = WindowExtractor(ImgGameWindow,WindowsServeRegion,0,loopServeRegionCap)
-    
+                
+                # Clear holding station if food has spoiled
+
     for loopServeRegionMake in range(0,len(WindowsServeRegion['top'])):
         # Check if a serving region requires service
-        if np.sum(ImgWindowsServe[:,:,:,loopServeRegionMake] == [255,255,255]) > 0:
+        ImgWindowsServe = WindowExtractor(ImgGameWindow,WindowsServeRegion,0,loopServeRegionMake)
+        if np.sum(ImgWindowsServe== [255,255,255]) > 0:
             print('\nServing Station ' + str(loopServeRegionMake+1) + ' Occupied!')
-            
+
             # Get section of screen
             ImgServeRegion = WindowExtractor(ImgGameWindow,WindowsCookRegion,0,loopServeRegionMake)
-            
+
             # Determine if food can be served, or is currently cooking
             if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 45000:
+
                 # If food is currently cooking, do nothing
                 print('    Blocked/Waiting for Cooking.')
             #elif np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))) > 750:     

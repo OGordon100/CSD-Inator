@@ -63,7 +63,6 @@ def TextScanRecipe (WindowGame,WindowsFoodRecipe):
     ImgInstructionInputBig = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
     ImgInstructionRGB = WindowExtractor(ImgInstructionInputBig,WindowsFoodRecipe,0,0)      
     ImgInstruction = cv2.cvtColor(ImgInstructionRGB,cv2.COLOR_RGB2GRAY)
-    cv2.imshow('test',ImgInstruction)
     # Get number of purple, red, yellow instructions
     NumPurple = int(np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([201,65,122]),np.array([201,65,122])))/ColourBlobSize))
     NumRed = int(np.round(np.sum(cv2.inRange(ImgInstructionRGB,np.array([65,65,201]),np.array([65,65,201])))/ColourBlobSize))
@@ -184,7 +183,7 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Raw Chop':'l' , 'Gr. Chicken':'k' , 'Top Bun':'o' , 
                    'Guacemole':'u' , 'Sprouts':'p' , 'Pineapple':'i' , 
                    'Avocado':'v' , 'Peas':'e' , 'Cranberry':'r' , 
-                   'Spicy Chk.':'s' , 'Parmesan':'r' , 'Biscuit':'i' , 
+                   'Spicy Chk.':'s' , 'Biscuit':'i' , 
                    'Croissant':'r' , 'Pecan':'e' , 'S.Pasta':'p' , 
                    'Grd.Meat':'m' , 'B.Sugar':'s' , 'Chili':'h' , 
                    'Lobster Sauce':'o' , 'Citrus Mayo':'m' , 'Lemon Aioli':'a',
@@ -198,7 +197,8 @@ SpecialKeyBinds = {'Chicken':'k' , 'Scrambled':'c' , 'Popcorn Shrimp':'p',
                    'Peppermint':'m' , 'Choc.Chips':'h' , 'Caramel':'a' , 
                    'P.Sugar':'s' , 'Chocolate S.':'o' , 'Blueberries':'l' , 
                    'Choe Crisps':'h' , 'Texas Tea':'x' , '[tsl':'r' ,
-                   'After placing the ingredients. Dunk & Cook.':'d'} 
+                   'After placing the ingredients. Dunk & Cook.':'d' ,
+                   'Peach Tea':'e'} 
 
 ChoreInstructions = {'The restroom needs attention. thank you.':[['Flush', 1, 'f'],['Sanitise', 1, 's']] , 
                      'Throw the trash. Thanks!':[['Throw', 1, 't'],['Sanitise', 1, 's']] , 
@@ -206,7 +206,7 @@ ChoreInstructions = {'The restroom needs attention. thank you.':[['Flush', 1, 'f
                      'Please set the roach traps. thank you.':[['Set Traps', 1, 't'],['Sanitise', 1, 's']] ,
                      'Please set the rat traps. thank you.':[['Lock', 1, 'l'],['Cheese', 1, 'c'],['Set', 1,'s']] ,
                      'Load the dirty dishes into the rack. Wash. wait for the green light. and then  release the washer and unload the dishes.':[['Dishes', 1, 'd'],['Wash', 30, 'w'],['Release', 1,'r'],['Unload', 1,'u'],['Sanitise', 1,'s']] ,
-                     'Please clean the pest light trap. thank you.':[['Open Trap', 1, 't'],['Close Trap', 20, 'c'],['Sanitise', 1, 's']]}
+                     'Please clean the pest light trap. thank you.':[['Open Trap', 1, 't'],['Close Trap', 1, 'c'],['Sanitise', 1, 's']]}
 
 ServingKeyBinds = {'1':'1' , '2':'2' , '3':'3' , '4':'4' , '5':'5' , '6':'6' ,
                    '7':'7' , '8':'8' , '9':'9' , '10':'0' , '11':'-' , 
@@ -223,7 +223,7 @@ DoneOpts2 = []
 DoneOpts11 = []
 DoneOpts22 = []
 AllRecipeOpts = [] 
-pyautogui.PAUSE = 0.06
+pyautogui.PAUSE = 0.07
 PauseTime = 0.07
 ColourBlobSize = 155040     # Number of pixels a purple/red/yellow blow takes up
 
@@ -260,11 +260,11 @@ while HS_Capturing == 1:
 # Start with a side to increase waiting time
 pyautogui.keyDown('tab')  
 time.sleep(PauseTime)
-pyautogui.keyDown('8')
+pyautogui.keyDown('6')
 time.sleep(PauseTime)
 pyautogui.keyUp('tab')
 time.sleep(PauseTime)
-pyautogui.keyUp('8')
+pyautogui.keyUp('6')
 pyautogui.hotkey('space')
 pyautogui.hotkey('space')
 pyautogui.keyDown('a')
@@ -272,77 +272,80 @@ pyautogui.keyUp('a')
 FoodMaker(WindowGame,WindowsFoodRecipe)
 
 # A NEW DAWN OF FEASTING IS AT HAND
+start_time = time.time()
 while 'Screen capturing':
     # Get raw pixels from the screen, save it to a numpy array
     ImgGameWindow = cv2.cvtColor(np.array(sct.grab(WindowGame)), cv2.COLOR_RGBA2RGB)
-    
-    # For each holding station
+        
     for loopHSCap in range(0,len(WindowsHS['left'])):
         ImgWindowsHS[:,:,:,loopHSCap] = WindowExtractor(ImgGameWindow,WindowsHS,loopHSCap,0)
-        
-    for loopHSMake in range(0,len(WindowsHS['left'])):
-        
-        # Check if a HS is free 
-        if int(np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake]))) in range(36,40):
-            print('\nHolding Station ' + str(loopHSMake+1) + ' Free!')
-                        
-            # Open the holding station (can't use.hotkey because of releasing keys backwards)
-            pyautogui.keyDown('tab')  
-            time.sleep(PauseTime)
-            pyautogui.keyDown(str(loopHSMake+1))
-            time.sleep(PauseTime)
-            pyautogui.keyUp('tab')
-            time.sleep(PauseTime)
-            pyautogui.keyUp(str(loopHSMake+1))
+
+    # For each holding station (but not at rush hour)
+    elapsed_time = time.time() - start_time   
+    if elapsed_time < 90 or elapsed_time in range(160,250) or elapsed_time > 310:
+        for loopHSMake in range(0,len(WindowsHS['left'])):
             
-            # Create list of already completed options, but remove from list if we are revisiting the HS that option was made in
-            for RemoverLoop1 in DoneOpts11:
-               if RemoverLoop1[1] == loopHSMake+1:
-                   DoneOpts1.remove(RemoverLoop1[0])
-                   DoneOpts11.remove(RemoverLoop1)
-            for RemoverLoop2 in DoneOpts22:
-               if RemoverLoop2[1] == loopHSMake+1:
-                   DoneOpts2.remove(RemoverLoop2[0])
-                   DoneOpts22.remove(RemoverLoop2)                
-            FiltOpts1 = set(AllRecipeOpts[0])-set(DoneOpts1)
-            FiltOpts2 = set(AllRecipeOpts[1])-set(DoneOpts2)
-            
-            # Pick a recipe
-            HSWindowNum = 1
-            if (HSWindowNum == 1) & (bool(FiltOpts1) == 1) & (len(AllRecipeOpts[0]) > 0):
-                # Make a HS required recipe
-                print('    Making a HS required recipe')
-                randopt = random.sample(FiltOpts1,1)[0].lower()
-                DoneOpts1.append(randopt.upper())
-                DoneOpts11.append([randopt.upper(),loopHSMake+1])
-            elif (bool(FiltOpts1) == 0):
-                print('    All HS required recipes made')
-                HSWindowNum += 1
-                pyautogui.hotkey('space')
-                RecipeOpts = AllRecipeOpts[1]
-                if (HSWindowNum == 2) & (bool(FiltOpts2) == 1) & (len(AllRecipeOpts[1]) > 0):
-                    # Make a HS optional recipe
-                    print('    Making a HS optional recipe')
-                    randopt = random.sample(FiltOpts2,1)[0].lower()
-                    DoneOpts2.append(randopt.upper())
-                    DoneOpts22.append([randopt.upper(),loopHSMake+1])
-                elif (len(AllRecipeOpts[2]) > 0):
-                    # Make a side
-                    print('    All HS optional recipes made \n    Making a side')
-                    RecipeOpts = AllRecipeOpts[2]
+            # Check if a HS is free 
+            if int(np.round(np.mean(ImgWindowsHS[:,:,:,loopHSMake]))) in range(36,40):
+                print('\nHolding Station ' + str(loopHSMake+1) + ' Free!')
+                            
+                # Open the holding station (can't use.hotkey because of releasing keys backwards)
+                pyautogui.keyDown('tab')  
+                time.sleep(PauseTime)
+                pyautogui.keyDown(str(loopHSMake+1))
+                time.sleep(PauseTime)
+                pyautogui.keyUp('tab')
+                time.sleep(PauseTime)
+                pyautogui.keyUp(str(loopHSMake+1))
+                
+                # Create list of already completed options, but remove from list if we are revisiting the HS that option was made in
+                for RemoverLoop1 in DoneOpts11:
+                   if RemoverLoop1[1] == loopHSMake+1:
+                       DoneOpts1.remove(RemoverLoop1[0])
+                       DoneOpts11.remove(RemoverLoop1)
+                for RemoverLoop2 in DoneOpts22:
+                   if RemoverLoop2[1] == loopHSMake+1:
+                       DoneOpts2.remove(RemoverLoop2[0])
+                       DoneOpts22.remove(RemoverLoop2)                
+                FiltOpts1 = set(AllRecipeOpts[0])-set(DoneOpts1)
+                FiltOpts2 = set(AllRecipeOpts[1])-set(DoneOpts2)
+                
+                # Pick a recipe
+                HSWindowNum = 1
+                if (HSWindowNum == 1) & (bool(FiltOpts1) == 1) & (len(AllRecipeOpts[0]) > 0):
+                    # Make a HS required recipe
+                    print('    Making a HS required recipe')
+                    randopt = random.sample(FiltOpts1,1)[0].lower()
+                    DoneOpts1.append(randopt.upper())
+                    DoneOpts11.append([randopt.upper(),loopHSMake+1])
+                elif (bool(FiltOpts1) == 0):
+                    print('    All HS required recipes made')
                     HSWindowNum += 1
                     pyautogui.hotkey('space')
-                    randopt = random.sample(RecipeOpts,1)[0].lower()
-            else:
-                print('    Nothing to make in a HS!')
-                break
-            
-            # Start the recipe!!!
-            print('        Making Recipe ' + randopt.upper())
-            pyautogui.keyDown(randopt)
-            pyautogui.keyUp(randopt)
-            
-            FoodMaker(WindowGame,WindowsFoodRecipe)
+                    RecipeOpts = AllRecipeOpts[1]
+                    if (HSWindowNum == 2) & (bool(FiltOpts2) == 1) & (len(AllRecipeOpts[1]) > 0):
+                        # Make a HS optional recipe
+                        print('    Making a HS optional recipe')
+                        randopt = random.sample(FiltOpts2,1)[0].lower()
+                        DoneOpts2.append(randopt.upper())
+                        DoneOpts22.append([randopt.upper(),loopHSMake+1])
+                    elif (len(AllRecipeOpts[2]) > 0):
+                        # Make a side
+                        print('    All HS optional recipes made \n    Making a side')
+                        RecipeOpts = AllRecipeOpts[2]
+                        HSWindowNum += 1
+                        pyautogui.hotkey('space')
+                        randopt = random.sample(RecipeOpts,1)[0].lower()
+                else:
+                    print('    Nothing to make in a HS!')
+                    break
+                
+                # Start the recipe!!!
+                print('        Making Recipe ' + randopt.upper())
+                pyautogui.keyDown(randopt)
+                pyautogui.keyUp(randopt)
+                
+                FoodMaker(WindowGame,WindowsFoodRecipe)
         
     # For each serving region
     for loopServeRegionCap in range(0,len(WindowsServeRegion['top'])):
@@ -357,7 +360,7 @@ while 'Screen capturing':
             ImgServeRegion = WindowExtractor(ImgGameWindow,WindowsCookRegion,0,loopServeRegionMake)
             
             # Determine if food can be served, or is currently cooking
-            if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 60000:
+            if np.sum(cv2.inRange(ImgServeRegion,np.array([255,255,255]),np.array([255,255,255]))) > 45000:
                 # If food is currently cooking, do nothing
                 print('    Blocked/Waiting for Cooking.')
             #elif np.sum(cv2.inRange(ImgServeRegion,np.array([0,36,255]),np.array([0,36,255]))) > 750:     

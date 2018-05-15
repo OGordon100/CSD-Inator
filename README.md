@@ -219,6 +219,8 @@ STANDARD RECIPES:
     
     - Stadium Nachos
     
+    - (probably most of the others that I haven't got round to testing yet)
+    
 DRINKS:
 
     - Coffee
